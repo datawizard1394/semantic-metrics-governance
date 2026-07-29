@@ -1,0 +1,91 @@
+{
+  "catalog_version": "1.0",
+  "metadata": {
+    "name": "synthetic-commerce-metrics",
+    "owner": "team-analytics-engineering",
+    "synthetic": true,
+    "production_deployment": false
+  },
+  "models": {
+    "orders": {
+      "description": "Synthetic order facts at one row per order.",
+      "relation": "analytics.fct_orders",
+      "owner": "team-commerce-data",
+      "primary_grain": ["order_id"],
+      "dimensions": {
+        "order_id": {
+          "expression": "order_id",
+          "type": "string",
+          "is_entity": true
+        },
+        "customer_id": {
+          "expression": "customer_id",
+          "type": "string",
+          "is_entity": true
+        },
+        "ordered_at": {
+          "expression": "ordered_at",
+          "type": "timestamp",
+          "is_entity": false
+        },
+        "country": {
+          "expression": "country_code",
+          "type": "string",
+          "is_entity": false
+        },
+        "channel": {
+          "expression": "sales_channel",
+          "type": "string",
+          "is_entity": false
+        }
+      },
+      "measures": {
+        "gross_revenue_amount": {
+          "aggregation": "sum",
+          "expression": "order_amount"
+        },
+        "distinct_orders": {
+          "aggregation": "count_distinct",
+          "expression": "order_id"
+        }
+      }
+    }
+  },
+  "metrics": {
+    "gross_revenue": {
+      "description": "Gross synthetic order value before refunds and discounts.",
+      "owner": "team-commerce-analytics",
+      "model": "orders",
+      "type": "simple",
+      "measure": "gross_revenue_amount",
+      "time_dimension": "ordered_at",
+      "allowed_time_grains": ["day", "week", "month"],
+      "allowed_dimensions": ["country", "channel"],
+      "certification": "verified"
+    },
+    "order_count": {
+      "description": "Distinct synthetic orders.",
+      "owner": "team-commerce-analytics",
+      "model": "orders",
+      "type": "simple",
+      "measure": "distinct_orders",
+      "time_dimension": "ordered_at",
+      "allowed_time_grains": ["day", "week", "month"],
+      "allowed_dimensions": ["country", "channel"],
+      "certification": "verified"
+    },
+    "average_order_value": {
+      "description": "Gross synthetic revenue divided by distinct synthetic orders.",
+      "owner": "team-commerce-analytics",
+      "model": "orders",
+      "type": "ratio",
+      "numerator": "gross_revenue_amount",
+      "denominator": "distinct_orders",
+      "time_dimension": "ordered_at",
+      "allowed_time_grains": ["day", "week", "month"],
+      "allowed_dimensions": ["country", "channel"],
+      "certification": "experimental"
+    }
+  }
+}
+
